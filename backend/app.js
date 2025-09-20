@@ -10,6 +10,7 @@ import applicationRoutes from './routes/applicationRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import matchRoutes from './routes/matchRoutes.js';
 import metaRoutes from './routes/metaRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
 
 // Import middleware
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
@@ -41,6 +42,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/match', matchRoutes);
 app.use('/api/meta', metaRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

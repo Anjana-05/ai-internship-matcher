@@ -242,7 +242,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Transform Your Career Journey?
           </h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-blue-900 mb-12 max-w-2xl mx-auto">
             Join thousands of students and top companies who are already benefiting from our AI-powered matching platform.
           </p>
           
@@ -265,8 +265,8 @@ const LandingPage = () => {
             )}
             <Link 
               to="/opportunities" 
-              className="bg-transparent text-white hover:bg-white hover:text-blue-600 font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-200 border-2 border-white"
-            >
+              className="bg-white text-blue-600 hover:bg-gray-100 font-semibold py-4 px-8 rounded-lg text-lg transform hover:scale-105 transition-all duration-200 shadow-lg"
+              >
               Explore Opportunities
             </Link>
           </div>

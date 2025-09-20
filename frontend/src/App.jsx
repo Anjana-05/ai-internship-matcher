@@ -13,6 +13,7 @@ import IndustryDashboardPage from './pages/IndustryDashboardPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AIMatchesPage from './pages/AIMatchesPage';
 import StudentProfilePage from './pages/StudentProfilePage';
+import EnhancedStudentProfilePage from './pages/EnhancedStudentProfilePage';
 import IndustryProfilePage from './pages/IndustryProfilePage';
 import TopLoadingBar from './components/TopLoadingBar';
 import Footer from './components/Footer';
@@ -39,6 +40,7 @@ function App() {
             <Route path="/dashboard/admin" element={<AdminDashboardPage />} />
             <Route path="/ai-matches" element={<AIMatchesPage />} />
             <Route path="/profile/student" element={<StudentProfilePage />} />
+            <Route path="/profile/enhanced" element={<EnhancedStudentProfilePage />} />
             <Route path="/profile/industry" element={<IndustryProfilePage />} />
           </Routes>
         </main>

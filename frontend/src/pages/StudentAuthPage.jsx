@@ -47,15 +47,25 @@ const StudentAuthPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    console.log('[STUDENT-AUTH] Form submission started');
+    console.log('[STUDENT-AUTH] Form data:', { 
+      email: formData.email, 
+      isLogin, 
+      hasPassword: !!formData.password 
+    });
+
     setLoading(true);
     try {
       let response;
       if (isLogin) {
+        console.log('[STUDENT-AUTH] Attempting login...');
         response = await api.post('/auth/login/student', {
           email: formData.email,
           password: formData.password,
         });
+        console.log('[STUDENT-AUTH] Login response:', response.data);
       } else {
+        console.log('[STUDENT-AUTH] Attempting signup...');
         response = await api.post('/auth/signup/student', {
           name: formData.name,
           email: formData.email,
@@ -65,13 +75,25 @@ const StudentAuthPage = () => {
           education: formData.education,
           locationPreferences: formData.locationPreferences,
         });
+        console.log('[STUDENT-AUTH] Signup response:', response.data);
       }
+      
+      console.log('[STUDENT-AUTH] Calling appLogin with:', {
+        user: response.data.user,
+        hasToken: !!response.data.token
+      });
+      
       appLogin(response.data.user, response.data.token);
       showToast("Authentication successful! Redirecting...", "success");
       navigate('/dashboard');
     } catch (error) {
-      showToast(error.response?.data?.message || 'Authentication failed', 'error');
-      console.error('Auth error:', error.response?.data || error.message);
+      console.error('[STUDENT-AUTH] Full error object:', error);
+      console.error('[STUDENT-AUTH] Response data:', error.response?.data);
+      console.error('[STUDENT-AUTH] Status:', error.response?.status);
+      console.error('[STUDENT-AUTH] Headers:', error.response?.headers);
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Authentication failed';
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }

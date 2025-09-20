@@ -10,13 +10,54 @@ const userSchema = mongoose.Schema(
     
     // Student-specific fields
     category: { type: String, enum: ['General', 'SC', 'ST', 'OBC', 'PWD'], default: 'General' },
-    skills: { type: String }, // comma-separated string
+    skills: [{ type: String }], // Array of skills (predefined + custom)
     education: { type: String },
-    locationPreferences: { type: String }, // camelCase
+    locationPreferences: { type: String },
+    
+    // Enhanced Profile Fields for Students
+    profile: {
+      // Required Documents
+      resume: {
+        filename: { type: String },
+        originalName: { type: String },
+        path: { type: String },
+        uploadedAt: { type: Date }
+      },
+      marksheet: {
+        filename: { type: String },
+        originalName: { type: String },
+        path: { type: String },
+        uploadedAt: { type: Date }
+      },
+      communityCertificate: {
+        filename: { type: String },
+        originalName: { type: String },
+        path: { type: String },
+        uploadedAt: { type: Date }
+      },
+      
+      // Optional Links
+      linkedinUrl: { type: String },
+      githubUrl: { type: String },
+      leetcodeUrl: { type: String },
+      
+      // Extra Certificates (Multiple uploads)
+      extraCertificates: [{
+        filename: { type: String },
+        originalName: { type: String },
+        path: { type: String },
+        description: { type: String }, // e.g., "AWS Certification", "React Course"
+        uploadedAt: { type: Date, default: Date.now }
+      }],
+      
+      // Profile completion status
+      isProfileComplete: { type: Boolean, default: false },
+      lastUpdated: { type: Date, default: Date.now }
+    },
 
     // Industry-specific fields
-    companyName: { type: String }, // camelCase
-    companyInfo: { type: String }, // camelCase
+    companyName: { type: String },
+    companyInfo: { type: String },
   },
   { timestamps: true }
 );

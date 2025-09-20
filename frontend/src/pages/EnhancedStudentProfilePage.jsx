@@ -4,7 +4,7 @@ import { useAppContext } from '../context/AppContext';
 import api from '../services/api';
 import Card from '../components/Card';
 
-const StudentProfilePage = () => {
+const EnhancedStudentProfilePage = () => {
   const { user, isAuthenticated, showToast, login } = useAppContext();
   const navigate = useNavigate();
   
@@ -77,11 +77,13 @@ const StudentProfilePage = () => {
     }
   };
 
-  
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: '' });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -256,23 +258,15 @@ const StudentProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] bg-gray-50 text-xl text-gray-700">
-        <svg className="animate-spin h-8 w-8 text-blue-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Loading profile...
+      <div className="flex justify-center items-center min-h-[calc(100vh-64px)] bg-gray-50">
+        <div className="text-xl text-gray-700">Loading profile...</div>
       </div>
     );
   }
 
-  if (!user || user.role !== 'student') {
-    return null;
-  }
-
   return (
     <div className="container mx-auto p-4 md:p-8 min-h-[calc(100vh-64px)] bg-gray-50">
-      <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-8">Student Profile</h1>
+      <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-8">Enhanced Student Profile</h1>
       
       <div className="max-w-4xl mx-auto">
         <Card className="p-8">
@@ -663,4 +657,4 @@ const StudentProfilePage = () => {
   );
 };
 
-export default StudentProfilePage;
+export default EnhancedStudentProfilePage;
