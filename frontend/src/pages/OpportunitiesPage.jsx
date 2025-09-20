@@ -5,6 +5,8 @@ import api from '../services/api';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
 import ApplicationFormModal from '../components/ApplicationFormModal';
+import PageHeader from '../components/PageHeader';
+import EmptyState from '../components/EmptyState';
 
 const OpportunitiesPage = () => {
   const { user, isAuthenticated, showToast } = useAppContext();
@@ -126,7 +128,10 @@ const OpportunitiesPage = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 min-h-[calc(100vh-64px)] bg-gray-50">
-      <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-8">Explore Opportunities</h1>
+      <PageHeader
+        title="Explore Opportunities"
+        subtitle="Search and filter internships. Click a card to see details and apply."
+      />
 
       <div className="bg-white shadow-lg rounded-xl p-6 mb-8 border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -182,7 +187,26 @@ const OpportunitiesPage = () => {
             </Card>
           ))
         ) : (
-          <p className="col-span-full text-center text-gray-600 text-lg">No opportunities found matching your criteria.</p>
+          <div className="col-span-full">
+            <EmptyState
+              icon="🔎"
+              title="No results match your filters"
+              description="Try adjusting your keywords, location, or sector to discover more opportunities."
+              action={
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilterLocation('');
+                    setFilterSector('');
+                    showToast('Filters cleared.', 'info');
+                  }}
+                  className="btn-secondary"
+                >
+                  Clear Filters
+                </button>
+              }
+            />
+          </div>
         )}
       </div>
 

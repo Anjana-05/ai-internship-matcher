@@ -10,6 +10,7 @@ import ApplicationFormPage from './pages/ApplicationFormPage';
 import OpportunitiesPage from './pages/OpportunitiesPage';
 import StudentDashboardPage from './pages/StudentDashboardPage';
 import IndustryDashboardPage from './pages/IndustryDashboardPage';
+import UploadInternshipPage from './pages/UploadInternshipPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AIMatchesPage from './pages/AIMatchesPage';
 import StudentProfilePage from './pages/StudentProfilePage';
@@ -37,6 +38,7 @@ function App() {
             <Route path="/apply" element={<ApplicationFormPage />} />
             <Route path="/dashboard" element={<StudentDashboardPage />} />
             <Route path="/dashboard/industry" element={<IndustryDashboardPage />} />
+            <Route path="/dashboard/industry/upload" element={<UploadInternshipPage />} />
             <Route path="/dashboard/admin" element={<AdminDashboardPage />} />
             <Route path="/ai-matches" element={<AIMatchesPage />} />
             <Route path="/profile/student" element={<StudentProfilePage />} />

@@ -4,6 +4,8 @@ import { useAppContext } from '../context/AppContext';
 import api from '../services/api';
 import Card from '../components/Card';
 import Modal from '../components/Modal';
+import PageHeader from '../components/PageHeader';
+import EmptyState from '../components/EmptyState';
 
 const IndustryDashboardPage = () => {
   const { user, isAuthenticated, showToast } = useAppContext();
@@ -12,18 +14,6 @@ const IndustryDashboardPage = () => {
   const [applicantCounts, setApplicantCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showPostModal, setShowPostModal] = useState(false);
-  const [newOpportunityData, setNewOpportunityData] = useState({
-    title: '',
-    location: '',
-    sector: '',
-    duration: '',
-    capacity: '',
-    description: '',
-    affirmativeCategory: '',
-  });
-  const [postErrors, setPostErrors] = useState({});
-  const [submittingOpportunity, setSubmittingOpportunity] = useState(false);
   const [selectedOpportunityApplicants, setSelectedOpportunityApplicants] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [fetchingApplicants, setFetchingApplicants] = useState(false);
@@ -40,13 +30,14 @@ const IndustryDashboardPage = () => {
 
     const fetchMyOpportunities = async () => {
       try {
-        console.log('[INDUSTRY] Fetching opportunities for user:', user._id);
+        console.log('[INDUSTRY] Fetching opportunities for user:', user?.id || user?._id);
         const response = await api.get('/opportunities');
         console.log('[INDUSTRY] All opportunities:', response.data);
         
         const ownedOpportunities = response.data.filter(opp => {
-          console.log('[INDUSTRY] Checking opportunity:', opp.title, 'company:', opp.company);
-          return opp.company && opp.company._id === user._id;
+          const uid = user?.id || user?._id;
+          console.log('[INDUSTRY] Checking opportunity:', opp.title, 'company:', opp.company, 'against uid:', uid);
+          return opp.company && opp.company._id === uid;
         });
         
         console.log('[INDUSTRY] Owned opportunities:', ownedOpportunities);
@@ -98,88 +89,7 @@ const IndustryDashboardPage = () => {
     };
   }, [myOpportunities]);
 
-  const handleOpportunityFormChange = (e) => {
-    setNewOpportunityData({ ...newOpportunityData, [e.target.name]: e.target.value });
-    if (postErrors[e.target.name]) {
-      setPostErrors({ ...postErrors, [e.target.name]: '' });
-    }
-  };
-
-  const validateOpportunityForm = () => {
-    const newErrors = {};
-    if (!newOpportunityData.title) newErrors.title = 'Title is required';
-    if (!newOpportunityData.location) newErrors.location = 'Location is required';
-    if (!newOpportunityData.sector) newErrors.sector = 'Sector is required';
-    if (!newOpportunityData.duration) newErrors.duration = 'Duration is required';
-    if (!newOpportunityData.capacity || Number(newOpportunityData.capacity) <= 0) newErrors.capacity = 'Capacity must be a positive number';
-    if (!newOpportunityData.description) newErrors.description = 'Description is required';
-    setPostErrors(newErrors);
-    return newErrors;
-  };
-
-  const handlePostOpportunity = async (e) => {
-    e.preventDefault();
-    // Debug: ensure handler is firing
-    console.log('[POST-OPPORTUNITY] Submit clicked', newOpportunityData);
-    if (!isAuthenticated || user?.role !== 'industry') {
-      showToast('Please log in as an industry user to post opportunities.', 'error');
-      navigate('/auth/industry');
-      return;
-    }
-    const errs = validateOpportunityForm();
-    const keys = Object.keys(errs);
-    if (keys.length > 0) {
-      const firstKey = keys[0];
-      showToast(errs[firstKey] || 'Please fix errors in the form', 'error');
-      // Attempt to focus the first invalid input
-      const el = document.getElementById(firstKey);
-      if (el && typeof el.focus === 'function') el.focus();
-      if (el && typeof el.scrollIntoView === 'function') {
-        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0);
-      }
-      return;
-    }
-
-    setSubmittingOpportunity(true);
-    try {
-      const payload = {
-        title: newOpportunityData.title.trim(),
-        location: newOpportunityData.location.trim(),
-        sector: newOpportunityData.sector.trim(),
-        duration: newOpportunityData.duration.trim(),
-        capacity: Number(newOpportunityData.capacity),
-        description: newOpportunityData.description.trim(),
-        ...(newOpportunityData.affirmativeCategory ? { affirmativeCategory: newOpportunityData.affirmativeCategory } : {}),
-      };
-      console.log('[POST-OPPORTUNITY] Payload to API:', payload);
-      const response = await api.post('/opportunities', payload);
-      console.log('[INDUSTRY] New opportunity created:', response.data);
-      // Refresh the opportunities list to show the new one
-      const updatedResponse = await api.get('/opportunities');
-      const ownedOpportunities = updatedResponse.data.filter(opp => opp.company && opp.company._id === user._id);
-      setMyOpportunities(ownedOpportunities);
-      
-      showToast("Opportunity posted successfully!", "success");
-      setShowPostModal(false);
-      setNewOpportunityData({
-        title: '',
-        location: '',
-        sector: '',
-        duration: '',
-        capacity: '',
-        description: '',
-        affirmativeCategory: '',
-      });
-    } catch (err) {
-      const status = err.response?.status;
-      const backend = err.response?.data;
-      const message = backend?.message || backend?.error || err.message || 'Failed to post opportunity';
-      showToast(`${message}${status ? ` (HTTP ${status})` : ''}`, 'error');
-      console.error('[POST-OPPORTUNITY] Error:', { status, backend, err: err.message });
-    } finally {
-      setSubmittingOpportunity(false);
-    }
-  };
+  // Upload form handlers removed: this page focuses only on viewing internships and applicants
 
   const fetchApplicants = async (opportunityId) => {
     setFetchingApplicants(true);
@@ -218,7 +128,8 @@ const IndustryDashboardPage = () => {
   const refreshOpportunities = async () => {
     try {
       const response = await api.get('/opportunities');
-      const ownedOpportunities = response.data.filter(opp => opp.company && opp.company._id === user._id);
+      const uid = user?.id || user?._id;
+      const ownedOpportunities = response.data.filter(opp => opp.company && opp.company._id === uid);
       setMyOpportunities(ownedOpportunities);
       
       // Refresh applicant counts
@@ -255,11 +166,14 @@ const IndustryDashboardPage = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 min-h-[calc(100vh-64px)] bg-gray-50">
-      <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-8">Industry Dashboard</h1>
+      <PageHeader
+        title="My Internships"
+        subtitle="Review your posted internships and manage applicants."
+      />
 
       <section className="mb-12">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">My Posted Opportunities</h2>
+          <h2 className="text-2xl font-bold text-gray-800">My Internships</h2>
           <div className="flex space-x-3">
             <button
               onClick={refreshOpportunities}
@@ -267,12 +181,6 @@ const IndustryDashboardPage = () => {
               title="Refresh opportunities and applicant counts"
             >
               🔄 Refresh
-            </button>
-            <button
-              onClick={() => setShowPostModal(true)}
-              className="btn-primary bg-green-600 hover:bg-green-700 focus:ring-green-500"
-            >
-              Post New Opportunity
             </button>
           </div>
         </div>
@@ -303,124 +211,13 @@ const IndustryDashboardPage = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-lg">You haven't posted any opportunities yet. Click "Post New Opportunity" to get started!</p>
+          <EmptyState
+            icon="📢"
+            title="No internships posted yet"
+            description="Use the Upload Internship page to add your first listing."
+          />
         )}
       </section>
-
-      <Modal isOpen={showPostModal} onClose={() => setShowPostModal(false)} title="Post New Opportunity">
-        <form onSubmit={handlePostOpportunity} className="space-y-6">
-          <div className="form-group">
-            <label htmlFor="title">Title <span className="text-red-600" aria-hidden="true">*</span></label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={newOpportunityData.title}
-              onChange={handleOpportunityFormChange}
-              aria-invalid={postErrors.title ? "true" : "false"}
-              aria-describedby={postErrors.title ? "title-error" : null}
-              placeholder="e.g., Software Engineering Intern"
-              autoFocus
-              className="form-group-input"
-            />
-            {postErrors.title && <p id="title-error" className="mt-1 text-sm text-red-600">{postErrors.title}</p>}
-          </div>
-          <div className="form-group">
-            <label htmlFor="location">Location</label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={newOpportunityData.location}
-              onChange={handleOpportunityFormChange}
-              aria-invalid={postErrors.location ? "true" : "false"}
-              aria-describedby={postErrors.location ? "location-error" : null}
-              className="form-group-input"
-            />
-            {postErrors.location && <p id="location-error" className="mt-1 text-sm text-red-600">{postErrors.location}</p>}
-          </div>
-          <div className="form-group">
-            <label htmlFor="sector">Sector (comma-separated)</label>
-            <input
-              type="text"
-              id="sector"
-              name="sector"
-              value={newOpportunityData.sector}
-              onChange={handleOpportunityFormChange}
-              aria-invalid={postErrors.sector ? "true" : "false"}
-              aria-describedby={postErrors.sector ? "sector-error" : null}
-              className="form-group-input"
-            />
-            {postErrors.sector && <p id="sector-error" className="mt-1 text-sm text-red-600">{postErrors.sector}</p>}
-          </div>
-          <div className="form-group">
-            <label htmlFor="duration">Duration</label>
-            <input
-              type="text"
-              id="duration"
-              name="duration"
-              value={newOpportunityData.duration}
-              onChange={handleOpportunityFormChange}
-              aria-invalid={postErrors.duration ? "true" : "false"}
-              aria-describedby={postErrors.duration ? "duration-error" : null}
-              className="form-group-input"
-            />
-            {postErrors.duration && <p id="duration-error" className="mt-1 text-sm text-red-600">{postErrors.duration}</p>}
-          </div>
-          <div className="form-group">
-            <label htmlFor="capacity">Capacity</label>
-            <input
-              type="number"
-              id="capacity"
-              name="capacity"
-              value={newOpportunityData.capacity}
-              onChange={handleOpportunityFormChange}
-              aria-invalid={postErrors.capacity ? "true" : "false"}
-              aria-describedby={postErrors.capacity ? "capacity-error" : null}
-              className="form-group-input"
-            />
-            {postErrors.capacity && <p id="capacity-error" className="mt-1 text-sm text-red-600">{postErrors.capacity}</p>}
-          </div>
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              value={newOpportunityData.description}
-              onChange={handleOpportunityFormChange}
-              rows="4"
-              aria-invalid={postErrors.description ? "true" : "false"}
-              aria-describedby={postErrors.description ? "description-error" : null}
-              className="form-group-input"
-            ></textarea>
-            {postErrors.description && <p id="description-error" className="mt-1 text-sm text-red-600">{postErrors.description}</p>}
-          </div>
-          <div className="form-group">
-            <label htmlFor="affirmativeCategory">Affirmative Category (Optional)</label>
-            <select
-              id="affirmativeCategory"
-              name="affirmativeCategory"
-              value={newOpportunityData.affirmativeCategory}
-              onChange={handleOpportunityFormChange}
-              className="form-group-input"
-            >
-              <option value="">None</option>
-              <option value="General">General</option>
-              <option value="SC">SC</option>
-              <option value="ST">ST</option>
-              <option value="OBC">OBC</option>
-              <option value="PWD">PWD</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            className="btn-primary bg-green-600 hover:bg-green-700 focus:ring-green-500"
-            disabled={submittingOpportunity}
-          >
-            {submittingOpportunity ? 'Posting...' : 'Post Opportunity'}
-          </button>
-        </form>
-      </Modal>
 
       <Modal isOpen={!!selectedOpportunityApplicants} onClose={() => setSelectedOpportunityApplicants(null)} title={`Applicants for ${selectedOpportunityApplicants?.title || ''}`}>
         {fetchingApplicants ? (
@@ -437,17 +234,40 @@ const IndustryDashboardPage = () => {
           <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
             {applicants.map((applicant) => (
               <Card key={applicant._id} className="p-4 border border-gray-200 rounded-md">
-                <h4 className="text-lg font-semibold text-gray-800">{applicant.student?.name}</h4>
-                <p className="text-gray-600 text-sm"><strong>Email:</strong> {applicant.student?.email}</p>
-                <p className="text-gray-600 text-sm"><strong>Skills:</strong> {applicant.student?.skills}</p>
-                <p className="text-gray-600 text-sm"><strong>Category:</strong> {applicant.student?.category}</p>
-                <p className="text-gray-600 text-sm"><strong>Location Preferences:</strong> {applicant.student?.locationPreferences}</p>
-                <div className="flex items-center space-x-2 mt-2">
+                <h4 className="text-lg font-semibold text-gray-800">{applicant.fullName || applicant.student?.name}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mt-1">
+                  <p><strong>Email:</strong> {applicant.email || applicant.student?.email}</p>
+                  <p><strong>Phone:</strong> {applicant.phone || '—'}</p>
+                  <p><strong>Location Pref:</strong> {applicant.locationPreference || applicant.student?.locationPreferences || '—'}</p>
+                  <p><strong>Education:</strong> {applicant.educationLevel || '—'}</p>
+                  <p><strong>Degree/Major:</strong> {applicant.degreeMajor || '—'}</p>
+                  <p><strong>Year:</strong> {applicant.yearOfStudy || '—'}</p>
+                  <p><strong>CGPA:</strong> {typeof applicant.cgpa === 'number' ? applicant.cgpa : '—'}</p>
+                  <p><strong>Category:</strong> {applicant.socialCategory || applicant.student?.category || '—'}</p>
+                  <p><strong>Rural/Aspirational:</strong> {applicant.isRuralOrAspirational ? 'Yes' : 'No'}</p>
+                  <p><strong>Disability:</strong> {applicant.hasDisability ? 'Yes' : 'No'}</p>
+                  <p className="md:col-span-2"><strong>Skills:</strong> {(Array.isArray(applicant.skills) ? applicant.skills : (applicant.student?.skills || '')).toString() || '—'}</p>
+                  <p className="md:col-span-2"><strong>Sector Interests:</strong> {(Array.isArray(applicant.sectorInterests) ? applicant.sectorInterests : []).join(', ') || '—'}</p>
+                  {applicant.pastInternship && (
+                    <p className="md:col-span-2"><strong>Past Internship:</strong> {applicant.pastInternship}</p>
+                  )}
+                  {applicant.resume?.url && (
+                    <p className="md:col-span-2">
+                      <strong>Resume:</strong> <a href={applicant.resume.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                        {applicant.resume.fileName || 'Download'}
+                      </a>
+                      {applicant.resume.size ? (
+                        <span className="text-xs text-gray-500 ml-2">({(applicant.resume.size / 1024).toFixed(0)} KB)</span>
+                      ) : null}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2 mt-3">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(applicant.status)}`}>
                     Status: {applicant.status}
                   </span>
                 </div>
-                <div className="flex space-x-2 mt-3">
+                <div className="flex flex-wrap gap-2 mt-3">
                   <button
                     onClick={() => handleUpdateApplicationStatus(applicant._id, 'selected')}
                     className="py-1 px-3 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50"
@@ -477,14 +297,36 @@ const IndustryDashboardPage = () => {
         )}
       </Modal>
 
-      <Modal isOpen={!!selectedApplicant} onClose={() => setSelectedApplicant(null)} title={`Applicant Profile: ${selectedApplicant?.student?.name || ''}`}>
-        <div className="space-y-3 text-gray-700">
-          <p><strong>Name:</strong> {selectedApplicant?.student?.name}</p>
-          <p><strong>Email:</strong> {selectedApplicant?.student?.email}</p>
-          <p><strong>Category:</strong> {selectedApplicant?.student?.category}</p>
-          <p><strong>Skills:</strong> {selectedApplicant?.student?.skills}</p>
-          <p><strong>Education:</strong> {selectedApplicant?.student?.education}</p>
-          <p><strong>Location Preferences:</strong> {selectedApplicant?.student?.locationPreferences}</p>
+      <Modal isOpen={!!selectedApplicant} onClose={() => setSelectedApplicant(null)} title={`Applicant Profile: ${selectedApplicant?.fullName || selectedApplicant?.student?.name || ''}`}>
+        <div className="space-y-4 text-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <p><strong>Name:</strong> {selectedApplicant?.fullName || selectedApplicant?.student?.name}</p>
+            <p><strong>Email:</strong> {selectedApplicant?.email || selectedApplicant?.student?.email}</p>
+            <p><strong>Phone:</strong> {selectedApplicant?.phone || '—'}</p>
+            <p><strong>Location Pref:</strong> {selectedApplicant?.locationPreference || selectedApplicant?.student?.locationPreferences || '—'}</p>
+            <p><strong>Education Level:</strong> {selectedApplicant?.educationLevel || '—'}</p>
+            <p><strong>Degree/Major:</strong> {selectedApplicant?.degreeMajor || '—'}</p>
+            <p><strong>Year of Study:</strong> {selectedApplicant?.yearOfStudy || '—'}</p>
+            <p><strong>CGPA:</strong> {typeof selectedApplicant?.cgpa === 'number' ? selectedApplicant?.cgpa : '—'}</p>
+            <p><strong>Category:</strong> {selectedApplicant?.socialCategory || selectedApplicant?.student?.category || '—'}</p>
+            <p><strong>Rural/Aspirational:</strong> {selectedApplicant?.isRuralOrAspirational ? 'Yes' : 'No'}</p>
+            <p><strong>Disability:</strong> {selectedApplicant?.hasDisability ? 'Yes' : 'No'}</p>
+          </div>
+          <p><strong>Skills:</strong> {(Array.isArray(selectedApplicant?.skills) ? selectedApplicant?.skills : (selectedApplicant?.student?.skills || '')).toString() || '—'}</p>
+          <p><strong>Sector Interests:</strong> {(Array.isArray(selectedApplicant?.sectorInterests) ? selectedApplicant?.sectorInterests : []).join(', ') || '—'}</p>
+          {selectedApplicant?.pastInternship && (
+            <p><strong>Past Internship:</strong> {selectedApplicant?.pastInternship}</p>
+          )}
+          {selectedApplicant?.resume?.url && (
+            <p>
+              <strong>Resume:</strong> <a href={selectedApplicant.resume.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                {selectedApplicant.resume.fileName || 'Download'}
+              </a>
+              {selectedApplicant.resume.size ? (
+                <span className="text-xs text-gray-500 ml-2">({(selectedApplicant.resume.size / 1024).toFixed(0)} KB)</span>
+              ) : null}
+            </p>
+          )}
         </div>
       </Modal>
     </div>

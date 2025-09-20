@@ -59,8 +59,11 @@ const IndustryProfilePage = () => {
 
     setSubmitting(true);
     try {
-      const response = await api.put(`/users/${user._id}`, formData);
+      const uid = user?.id || user?._id;
+      const response = await api.put(`/users/${uid}`, formData);
       setUser(response.data);
+      // keep local storage in sync so other pages read the latest fields
+      localStorage.setItem('user', JSON.stringify(response.data));
       showToast("Profile updated successfully!", "success");
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to update profile', 'error');

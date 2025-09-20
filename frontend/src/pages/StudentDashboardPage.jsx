@@ -5,6 +5,8 @@ import api from '../services/api';
 import Card from '../components/Card';
 import ProgressTracker from '../components/ProgressTracker';
 import Modal from '../components/Modal';
+import PageHeader from '../components/PageHeader';
+import EmptyState from '../components/EmptyState';
 
 const StudentDashboardPage = () => {
   const { user, isAuthenticated, showToast } = useAppContext();
@@ -71,7 +73,10 @@ const StudentDashboardPage = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 min-h-[calc(100vh-64px)] bg-gray-50">
-      <h1 className="text-4xl font-extrabold text-gray-900 text-center mb-8">Student Dashboard</h1>
+      <PageHeader
+        title="Student Dashboard"
+        subtitle="Track your applications and explore AI-recommended internships tailored to you."
+      />
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">My Applications</h2>
@@ -92,7 +97,12 @@ const StudentDashboardPage = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-lg">You haven't applied to any opportunities yet. Explore the <Link to="/opportunities" className="text-blue-600 hover:underline">Opportunities page</Link>!</p>
+          <EmptyState
+            icon="📬"
+            title="No applications yet"
+            description="You haven’t applied to any internships. Explore opportunities and apply to get started."
+            action={<Link to="/opportunities" className="btn-primary bg-blue-600 hover:bg-blue-700 focus:ring-blue-500">Explore Opportunities</Link>}
+          />
         )}
       </section>
 
@@ -116,7 +126,12 @@ const StudentDashboardPage = () => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-lg">No AI recommendations available yet. Ensure your profile is complete and check back later!</p>
+          <EmptyState
+            icon="🤖"
+            title="No recommendations yet"
+            description="Make sure your profile is complete to receive personalized matches. Check back soon!"
+            action={<Link to="/profile/student" className="btn-secondary">Update My Profile</Link>}
+          />
         )}
       </section>
 
